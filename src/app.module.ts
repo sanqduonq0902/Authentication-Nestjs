@@ -1,14 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.modules';
+import { DatabaseModule } from './config/database.config';
+import { EnvModule } from './config/env.config';
 
 @Module({
-  imports: [
-    MongooseModule.forRoot('mongodb://127.0.0.1:27017/Nest-Auth'),
-    AuthModule,
-  ],
+  imports: [EnvModule, DatabaseModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })
