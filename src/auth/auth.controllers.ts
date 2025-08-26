@@ -5,6 +5,7 @@ import { Response } from 'express';
 import { returnRes } from 'src/utils/return-response';
 import { loginDto } from './dtos/login.dto';
 import { JwtUtilService } from 'src/utils/jwt';
+import { refreshTokenDto } from './dtos/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,7 +24,13 @@ export class AuthController {
   async login(@Body() dto: loginDto, @Res() res: Response) {
     const data = await this.authService.login(dto);
     const payload = { userId: data.userId };
-    const accessToken = this.jwt.generateToken(res, payload);
+    const accessToken = await this.jwt.generateToken(res, payload);
     returnRes(res, HttpStatus.OK, 'Logged in successfully', accessToken);
+  }
+
+  @Post('refresh-token')
+  async refreshToken(@Body() dto: refreshTokenDto, @Res() res: Response) {
+    const result = await this.jwt.refreshToken(res, dto.refreshToken);
+    returnRes(res, HttpStatus.OK, 'Token fetched successfully', result);
   }
 }

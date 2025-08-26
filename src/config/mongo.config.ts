@@ -14,4 +14,4 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   ],
   exports: [MongooseModule],
 })
-export class DatabaseModule {}
+export class MongoDBModule {}
