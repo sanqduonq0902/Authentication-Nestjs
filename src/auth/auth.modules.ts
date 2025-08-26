@@ -6,9 +6,11 @@ import { AuthService } from './auth.services';
 import { JwtUtilService } from 'src/utils/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { RedisModule } from 'src/config/redis.config';
 
 @Module({
   imports: [
+    RedisModule,
     ConfigModule,
     JwtModule,
     MongooseModule.forFeature([
