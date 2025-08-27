@@ -19,6 +19,7 @@ import { changePasswordDto } from './dtos/change-password';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { forgotPasswordDto } from './dtos/forgot-password';
 import { verifyEmailDto } from './dtos/verify-emai';
+import { resendOTPDto } from './dtos/resend-OTP';
 
 @Controller('auth')
 export class AuthController {
@@ -45,6 +46,12 @@ export class AuthController {
   async verifyEmail(@Body() dto: verifyEmailDto, @Res() res: Response) {
     await this.authService.verifyEmail(dto);
     returnRes(res, HttpStatus.OK, `Verified email ${dto.email} successfully`);
+  }
+
+  @Post('resend-OTP')
+  async resendOTP(@Body() dto: resendOTPDto, @Res() res: Response) {
+    await this.authService.resendOTP(dto);
+    returnRes(res, HttpStatus.OK, `OTP sent email ${dto.email} successfully`);
   }
 
   @Post('refresh-token')

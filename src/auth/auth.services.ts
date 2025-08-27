@@ -16,6 +16,7 @@ import { MailService } from 'src/services/mail.services';
 import { RateLimitService } from 'src/services/rate-limit.services';
 import { verifyEmailDto } from './dtos/verify-emai';
 import Redis from 'ioredis';
+import { resendOTPDto } from './dtos/resend-OTP';
 
 @Injectable()
 export class AuthService {
@@ -81,6 +82,19 @@ export class AuthService {
     );
 
     await this.redis.del(`mail:${email}`);
+  }
+
+  async resendOTP(dto: resendOTPDto) {
+    const { email } = dto;
+
+    await this.rateLimit.checkLimit(email, {
+      limit: 3,
+      ttl: 30,
+    });
+
+    await this.redis.del(`mail:${email}`);
+
+    void this.mail.sendVerifyEmail(email);
   }
 
   async changePassword(dto: changePasswordDto, userId: string | undefined) {
