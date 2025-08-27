@@ -17,6 +17,7 @@ import { RateLimitService } from 'src/services/rate-limit.services';
 import { verifyEmailDto } from './dtos/verify-emai';
 import Redis from 'ioredis';
 import { resendOTPDto } from './dtos/resend-OTP';
+import { resetPasswordDto } from './dtos/reset-password';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +33,7 @@ export class AuthService {
 
     const existingUser = await this.UserModel.findOne({ email });
     if (existingUser) {
-      throw new BadRequestException('Email is already exist');
+      throw new BadRequestException('Email already exist');
     }
 
     const saltNumber = 10;
@@ -70,7 +71,12 @@ export class AuthService {
   async verifyEmail(dto: verifyEmailDto) {
     const { email, otp } = dto;
 
-    const otpRedis = await this.redis.get(`mail:${email}`);
+    const user = await this.UserModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException('Email not found');
+    }
+
+    const otpRedis = await this.redis.get(`VERIFY:${email}`);
     if (otp !== otpRedis) {
       throw new BadRequestException('OTP is wrong');
     }
@@ -81,20 +87,29 @@ export class AuthService {
       { new: true },
     );
 
-    await this.redis.del(`mail:${email}`);
+    await this.redis.del(`VERIFY:${email}`);
   }
 
   async resendOTP(dto: resendOTPDto) {
-    const { email } = dto;
+    const { email, type } = dto;
+
+    const user = await this.UserModel.findOne({ email });
+    if (user?.isVerify && type === 'VERIFY') {
+      throw new BadRequestException('Email already verify');
+    }
 
     await this.rateLimit.checkLimit(email, {
       limit: 3,
       ttl: 30,
     });
 
-    await this.redis.del(`mail:${email}`);
+    await this.redis.del(`${type}:${email}`);
 
-    void this.mail.sendVerifyEmail(email);
+    if (type === 'VERIFY') {
+      void this.mail.sendVerifyEmail(email);
+    } else {
+      void this.mail.sendForgotPassword(email);
+    }
   }
 
   async changePassword(dto: changePasswordDto, userId: string | undefined) {
@@ -138,5 +153,29 @@ export class AuthService {
       throw new BadRequestException('Email is not found');
     }
     void this.mail.sendForgotPassword(email);
+  }
+
+  async resetPassword(dto: resetPasswordDto) {
+    const { email, otp, newPassword } = dto;
+
+    const user = await this.UserModel.findOne({ email });
+    if (!user) {
+      throw new BadRequestException('Email not found');
+    }
+
+    const otpRedis = await this.redis.get(`FORGOT:${email}`);
+    if (otp !== otpRedis) {
+      throw new BadRequestException('OTP is wrong');
+    }
+
+    const saltNumber = 10;
+    const hashing = await bcrypt.hash(newPassword, saltNumber);
+    await this.UserModel.findOneAndUpdate(
+      { email },
+      { password: hashing },
+      { new: true },
+    );
+
+    await this.redis.del(`FORGOT:${email}`);
   }
 }
