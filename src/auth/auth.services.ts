@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import { signUpDto } from './dtos/signup.dto';
 import * as bcrypt from 'bcrypt';
 import { loginDto } from './dtos/login.dto';
+import { changePasswordDto } from './dtos/change-password';
 
 @Injectable()
 export class AuthService {
@@ -50,5 +51,31 @@ export class AuthService {
     return {
       userId: String(existingUser._id),
     };
+  }
+
+  async changePassword(dto: changePasswordDto, userId: string | undefined) {
+    const { currentPassword, newPassword } = dto;
+
+    const user = await this.UserModel.findOne({
+      _id: userId,
+    });
+    if (!user) {
+      throw new UnauthorizedException('Token not provided');
+    }
+
+    const comparing = await bcrypt.compare(currentPassword, user.password!);
+    if (!comparing) {
+      throw new UnauthorizedException('Current password is wrong');
+    }
+
+    const saltNumber = 10;
+    const hashing = await bcrypt.hash(newPassword, saltNumber);
+    await this.UserModel.findByIdAndUpdate(
+      user._id,
+      {
+        password: hashing,
+      },
+      { new: true },
+    );
   }
 }
