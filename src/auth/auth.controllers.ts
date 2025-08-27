@@ -20,6 +20,7 @@ import { AuthGuard } from 'src/guards/auth.guards';
 import { forgotPasswordDto } from './dtos/forgot-password';
 import { verifyEmailDto } from './dtos/verify-emai';
 import { resendOTPDto } from './dtos/resend-OTP';
+import { resetPasswordDto } from './dtos/reset-password';
 
 @Controller('auth')
 export class AuthController {
@@ -76,5 +77,11 @@ export class AuthController {
   async forgotPassword(@Body() dto: forgotPasswordDto, @Res() res: Response) {
     await this.authService.forgotPassword(dto);
     returnRes(res, HttpStatus.OK, `Email sent to ${dto.email}`);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: resetPasswordDto, @Res() res: Response) {
+    await this.authService.resetPassword(dto);
+    returnRes(res, HttpStatus.OK, 'Your password has been reset successfully');
   }
 }

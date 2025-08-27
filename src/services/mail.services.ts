@@ -27,7 +27,7 @@ export class MailService {
       from: `Authentication-Nestjs`,
       to: email,
       subject: 'Verify Email',
-      text: `Your OTP - ${await this.otp.generateOTP(email)}`,
+      text: `Your OTP - ${await this.otp.generateOTP(email, 'VERIFY')}`,
     };
 
     await this.transporter.sendMail(mailOptions);
@@ -38,7 +38,7 @@ export class MailService {
       from: `Authentication-Nestjs`,
       to: email,
       subject: 'Forgot Password',
-      text: `Your OTP - ${await this.otp.generateOTP(email)}`,
+      text: `Your OTP - ${await this.otp.generateOTP(email, 'FORGOT')}`,
     };
 
     await this.transporter.sendMail(mailOptions);
