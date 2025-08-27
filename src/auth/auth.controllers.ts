@@ -18,6 +18,7 @@ import { refreshTokenDto } from './dtos/refresh-token.dto';
 import { changePasswordDto } from './dtos/change-password';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { forgotPasswordDto } from './dtos/forgot-password';
+import { verifyEmailDto } from './dtos/verify-emai';
 
 @Controller('auth')
 export class AuthController {
@@ -38,6 +39,12 @@ export class AuthController {
     const payload = { userId: data.userId };
     const accessToken = await this.jwt.generateToken(res, payload);
     returnRes(res, HttpStatus.OK, 'Logged in successfully', accessToken);
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body() dto: verifyEmailDto, @Res() res: Response) {
+    await this.authService.verifyEmail(dto);
+    returnRes(res, HttpStatus.OK, `Verified email ${dto.email} successfully`);
   }
 
   @Post('refresh-token')

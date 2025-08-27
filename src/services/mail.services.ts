@@ -22,6 +22,17 @@ export class MailService {
     });
   }
 
+  async sendVerifyEmail(email: string) {
+    const mailOptions = {
+      from: `Authentication-Nestjs`,
+      to: email,
+      subject: 'Verify Email',
+      text: `Your OTP - ${await this.otp.generateOTP(email)}`,
+    };
+
+    await this.transporter.sendMail(mailOptions);
+  }
+
   async sendForgotPassword(email: string) {
     const mailOptions = {
       from: `Authentication-Nestjs`,

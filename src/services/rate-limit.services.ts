@@ -7,13 +7,11 @@ export class RateLimitService {
 
   async checkLimit(key: string, options: IRatelimitOptions) {
     const { limit, ttl } = options;
-    const limitKey = `limitKey:${key}`;
+    const limitKey = `limit_count:${key}`;
 
     const current = await this.redis.incr(limitKey);
     if (current === 1) {
-      await this.redis.ttl(limitKey, () => {
-        return 1000 * 60 * ttl;
-      });
+      await this.redis.expire(limitKey, 60 * ttl);
     }
 
     if (current > limit) {
