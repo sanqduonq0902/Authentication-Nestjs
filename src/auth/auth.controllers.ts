@@ -1,11 +1,22 @@
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Post,
+  Put,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.services';
 import { signUpDto } from './dtos/signup.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { returnRes } from 'src/utils/return-response';
 import { loginDto } from './dtos/login.dto';
 import { JwtUtilService } from 'src/utils/jwt';
 import { refreshTokenDto } from './dtos/refresh-token.dto';
+import { changePasswordDto } from './dtos/change-password';
+import { AuthGuard } from 'src/guards/auth.guards';
 
 @Controller('auth')
 export class AuthController {
@@ -32,5 +43,17 @@ export class AuthController {
   async refreshToken(@Body() dto: refreshTokenDto, @Res() res: Response) {
     const result = await this.jwt.refreshToken(res, dto.refreshToken);
     returnRes(res, HttpStatus.OK, 'Token fetched successfully', result);
+  }
+
+  @UseGuards(AuthGuard)
+  @Put('change-password')
+  async changePassword(
+    @Body() dto: changePasswordDto,
+    @Res() res: Response,
+    @Req() req: Request,
+  ) {
+    const userId = req.userId;
+    await this.authService.changePassword(dto, userId);
+    returnRes(res, HttpStatus.OK, 'Changed password successfully');
   }
 }
