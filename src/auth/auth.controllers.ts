@@ -17,6 +17,7 @@ import { JwtUtilService } from 'src/utils/jwt';
 import { refreshTokenDto } from './dtos/refresh-token.dto';
 import { changePasswordDto } from './dtos/change-password';
 import { AuthGuard } from 'src/guards/auth.guards';
+import { forgotPasswordDto } from './dtos/forgot-password';
 
 @Controller('auth')
 export class AuthController {
@@ -55,5 +56,11 @@ export class AuthController {
     const userId = req.userId;
     await this.authService.changePassword(dto, userId);
     returnRes(res, HttpStatus.OK, 'Changed password successfully');
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: forgotPasswordDto, @Res() res: Response) {
+    await this.authService.forgotPassword(dto);
+    returnRes(res, HttpStatus.OK, `Email sent to ${dto.email}`);
   }
 }

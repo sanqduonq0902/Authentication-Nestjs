@@ -10,10 +10,17 @@ import { signUpDto } from './dtos/signup.dto';
 import * as bcrypt from 'bcrypt';
 import { loginDto } from './dtos/login.dto';
 import { changePasswordDto } from './dtos/change-password';
+import { forgotPasswordDto } from './dtos/forgot-password';
+import { MailService } from 'src/services/mail.services';
+import { RateLimitService } from 'src/services/rate-limit.services';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private UserModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private UserModel: Model<User>,
+    private mail: MailService,
+    private rateLimit: RateLimitService,
+  ) {}
 
   async signUp(dto: signUpDto) {
     const { email, name, password } = dto;
@@ -77,5 +84,22 @@ export class AuthService {
       },
       { new: true },
     );
+  }
+
+  async forgotPassword(dto: forgotPasswordDto) {
+    const { email } = dto;
+
+    await this.rateLimit.checkLimit(email, {
+      limit: 3,
+      ttl: 30,
+    });
+
+    const existingEmail = await this.UserModel.findOne({
+      email,
+    });
+    if (!existingEmail) {
+      throw new BadRequestException('Email is not found');
+    }
+    void this.mail.sendForgotPassword(email);
   }
 }
