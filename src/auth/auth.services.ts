@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,10 +14,13 @@ import { changePasswordDto } from './dtos/change-password';
 import { forgotPasswordDto } from './dtos/forgot-password';
 import { MailService } from 'src/services/mail.services';
 import { RateLimitService } from 'src/services/rate-limit.services';
+import { verifyEmailDto } from './dtos/verify-emai';
+import Redis from 'ioredis';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject('REDIS_CLIENT') private redis: Redis,
     @InjectModel(User.name) private UserModel: Model<User>,
     private mail: MailService,
     private rateLimit: RateLimitService,
@@ -37,7 +41,9 @@ export class AuthService {
       name,
       email,
       password: hashing,
+      isVerify: false,
     });
+    void this.mail.sendVerifyEmail(email);
 
     return newUser;
   }
@@ -58,6 +64,23 @@ export class AuthService {
     return {
       userId: String(existingUser._id),
     };
+  }
+
+  async verifyEmail(dto: verifyEmailDto) {
+    const { email, otp } = dto;
+
+    const otpRedis = await this.redis.get(`mail:${email}`);
+    if (otp !== otpRedis) {
+      throw new BadRequestException('OTP is wrong');
+    }
+
+    await this.UserModel.findOneAndUpdate(
+      { email: email },
+      { isVerify: true },
+      { new: true },
+    );
+
+    await this.redis.del(`mail:${email}`);
   }
 
   async changePassword(dto: changePasswordDto, userId: string | undefined) {

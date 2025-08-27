@@ -25,7 +25,7 @@ export class JwtUtilService {
     });
 
     await this.redis.set(
-      `refresh-token:${payload.userId}`,
+      `refresh_token:${payload.userId}`,
       refreshToken,
       'EX',
       60 * 60 * 24 * 7,
