@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import Redis from 'ioredis';
+import { IJwtPayload } from 'src/interface/jwt';
 
 @Injectable()
 export class JwtUtilService {
@@ -64,5 +65,11 @@ export class JwtUtilService {
 
     const newAccessToken = await this.generateToken(res, { userId });
     return newAccessToken;
+  }
+
+  async verifyToken(token: string): Promise<IJwtPayload> {
+    return await this.jwt.verify(token, {
+      secret: this.env.get('JWT_SECRET'),
+    });
   }
 }

@@ -5,14 +5,15 @@ import { AuthController } from './auth.controllers';
 import { AuthService } from './auth.services';
 import { JwtUtilService } from 'src/utils/jwt';
 import { ConfigModule } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
 import { RedisModule } from 'src/config/redis.config';
+import { AuthGuard } from 'src/guards/auth.guards';
+import { JwtConfigModule } from 'src/config/jwt.config';
 
 @Module({
   imports: [
     RedisModule,
     ConfigModule,
-    JwtModule,
+    JwtConfigModule,
     MongooseModule.forFeature([
       {
         name: User.name,
@@ -21,6 +22,7 @@ import { RedisModule } from 'src/config/redis.config';
     ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtUtilService],
+  providers: [AuthService, JwtUtilService, AuthGuard],
+  exports: [AuthGuard, JwtUtilService],
 })
 export class AuthModule {}

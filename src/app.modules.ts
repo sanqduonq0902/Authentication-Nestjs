@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppController } from './app.controllers';
+import { AppService } from './app.services';
 import { AuthModule } from './auth/auth.modules';
 import { EnvModule } from './config/env.config';
 import { MongoDBModule } from './config/mongo.config';
