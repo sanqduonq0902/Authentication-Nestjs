@@ -113,4 +113,12 @@ export class AuthController {
       `${this.env.get('FRONTEND_ORIGIN')}?accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
   }
+
+  @UseGuards(AuthGuard)
+  @Get('check-auth')
+  checkAuth(@Req() req: Request, @Res() res: Response) {
+    returnRes(res, HttpStatus.OK, 'User is authenticated', {
+      userId: req.user,
+    });
+  }
 }
