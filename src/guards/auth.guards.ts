@@ -19,7 +19,7 @@ export class AuthGuard implements CanActivate {
     const token = authHeader.split(' ')[1];
     try {
       const payload = await this.jwt.verifyToken(token);
-      request.userId = payload.userId;
+      request.user = payload.userId;
 
       return true;
     } catch (error) {

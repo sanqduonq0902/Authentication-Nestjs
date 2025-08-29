@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Post,
   Put,
@@ -21,12 +22,15 @@ import { forgotPasswordDto } from './dtos/forgot-password';
 import { verifyEmailDto } from './dtos/verify-emai';
 import { resendOTPDto } from './dtos/resend-OTP';
 import { resetPasswordDto } from './dtos/reset-password';
+import { GoogleAuthGuard } from 'src/guards/google.guards';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private jwt: JwtUtilService,
+    private env: ConfigService,
   ) {}
 
   @Post('signup')
@@ -68,7 +72,7 @@ export class AuthController {
     @Res() res: Response,
     @Req() req: Request,
   ) {
-    const userId = req.userId;
+    const userId = req.user;
     await this.authService.changePassword(dto, userId);
     returnRes(res, HttpStatus.OK, 'Changed password successfully');
   }
@@ -88,7 +92,25 @@ export class AuthController {
   @Post('logout')
   @UseGuards(AuthGuard)
   async logout(@Req() req: Request, @Res() res: Response) {
-    await this.jwt.clearToken(res, req.userId!);
+    await this.jwt.clearToken(res, req.user!);
     returnRes(res, HttpStatus.OK, 'Logged out successfully');
+  }
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('google')
+  googleLogin() {}
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async googleCallback(@Req() req: Request, @Res() res: Response) {
+    const userId = req.user!;
+    const payload = { userId: userId };
+    const { accessToken, refreshToken } = await this.jwt.generateToken(
+      res,
+      payload,
+    );
+    res.redirect(
+      `${this.env.get('FRONTEND_ORIGIN')}?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+    );
   }
 }

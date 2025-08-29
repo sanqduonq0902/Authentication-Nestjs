@@ -11,9 +11,12 @@ import { JwtConfigModule } from 'src/config/jwt.config';
 import { MailService } from 'src/services/mail.services';
 import { OTPService } from 'src/services/otp.services';
 import { RateLimitService } from 'src/services/rate-limit.services';
+import { PassportModule } from '@nestjs/passport';
+import { GoogleService } from 'src/services/google.services';
 
 @Module({
   imports: [
+    PassportModule,
     RedisModule,
     ConfigModule,
     JwtConfigModule,
@@ -32,6 +35,7 @@ import { RateLimitService } from 'src/services/rate-limit.services';
     MailService,
     OTPService,
     RateLimitService,
+    GoogleService,
   ],
   exports: [AuthGuard, JwtUtilService],
 })
