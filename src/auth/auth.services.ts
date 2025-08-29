@@ -18,6 +18,7 @@ import { verifyEmailDto } from './dtos/verify-emai';
 import Redis from 'ioredis';
 import { resendOTPDto } from './dtos/resend-OTP';
 import { resetPasswordDto } from './dtos/reset-password';
+import { createUserGoogleDto } from './dtos/google-user';
 
 @Injectable()
 export class AuthService {
@@ -177,5 +178,22 @@ export class AuthService {
     );
 
     await this.redis.del(`FORGOT:${email}`);
+  }
+
+  async validateGoogleUser(googleUser: createUserGoogleDto) {
+    const { email, name, profilePicture, isVerify, password } = googleUser;
+    const user = await this.UserModel.findOne({
+      email,
+    });
+
+    if (user) return user;
+
+    return await this.UserModel.create({
+      email,
+      name,
+      profilePicture,
+      isVerify,
+      password,
+    });
   }
 }

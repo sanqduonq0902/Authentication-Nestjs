@@ -12,7 +12,7 @@ export class AppController {
   getHello(@Req() req: Request) {
     return {
       message: 'Accessed Resource',
-      userId: req.userId,
+      userId: req.user,
     };
   }
 }

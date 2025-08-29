@@ -9,11 +9,17 @@ export class User extends Document {
   @Prop({ required: true, unique: true, trim: true })
   email: string;
 
-  @Prop({ required: true })
+  @Prop()
   password?: string;
 
   @Prop({ default: false })
   isVerify: boolean;
+
+  @Prop({ unique: true })
+  googleId?: string;
+
+  @Prop()
+  profilePicture?: string;
 }
 
 export const UserEntity = SchemaFactory.createForClass(User);
