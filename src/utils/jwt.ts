@@ -72,4 +72,20 @@ export class JwtUtilService {
       secret: this.env.get('JWT_SECRET'),
     });
   }
+
+  async clearToken(res: Response, userId: string) {
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+    });
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: true,
+    });
+
+    await this.redis.del(`refresh_token:${userId}`);
+  }
 }

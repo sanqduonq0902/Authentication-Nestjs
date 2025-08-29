@@ -84,4 +84,11 @@ export class AuthController {
     await this.authService.resetPassword(dto);
     returnRes(res, HttpStatus.OK, 'Your password has been reset successfully');
   }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  async logout(@Req() req: Request, @Res() res: Response) {
+    await this.jwt.clearToken(res, req.userId!);
+    returnRes(res, HttpStatus.OK, 'Logged out successfully');
+  }
 }
